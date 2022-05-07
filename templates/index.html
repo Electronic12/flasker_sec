@@ -1,15 +1,16 @@
-<h1>Hello world</h1>
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Hello world</h1>
 
-<p>Salam Allaberdi aga gowmy yagdaylarynyz</p>
+    <h1>Menin adym {{ first_name }}</h1>
+    <p>Menin familiyam {{ second_name | title }}</p>
 
-<h1>Menin adym {{ first_name }}</h1>
-<p>Menin familiyam {{ second_name | title }}</p>
+    <h1>Menin layan donerim</h1>
 
-<h1>Menin layan donerim</h1>
+    {% for i in favorite_pissa %}
+        {{ i | upper }}<br>
+    {% endfor %}
 
-{% for i in favorite_pissa %}
-    {{ i | upper }}<br>
-{% endfor %}
-
-<br><br><br><br><br>
-{{ favorite_pissa.0 | title }}</br>
+    <br><br><br><br><br>
+    {{ favorite_pissa.0 | title }}</br>
+{% endblock %}
