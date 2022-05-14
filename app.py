@@ -54,7 +54,23 @@ def update(id):
             return render_template("update_to_username.html", form=form, update_db_user=update_db_user)
 
     else:
-        return render_template("update_to_username.html", form=form, update_db_user=update_db_user)
+        return render_template("update_to_username.html", form=form, update_db_user=update_db_user, id=id)
+
+@app.route('/delete/<int:id>/')
+def delete(id):
+    user_to_delete = Users.query.get_or_404(id)
+    name = None
+    form = UserForm()
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        flash('User deleted successfully')
+        our_users = Users.query.order_by(Users.date_added)         
+        return render_template("add_user.html", name=name, form=form, our_users=our_users)
+
+    except Exception as ex:
+        flash('Error deleting user')
+
 
 # Create  a Form Class
 class NamerForm(FlaskForm):
