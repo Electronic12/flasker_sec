@@ -6,7 +6,9 @@ from wtforms import StringField, SubmitField, PasswordField, BooleanField, Valid
 from wtforms.validators import DataRequired, EqualTo, Length
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms.widgets import TextArea
 
 #  Create a Flask Instance
 app = Flask(__name__)
@@ -18,6 +20,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///codemy.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/name'
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 @app.route('/date/')
 def date_for_json():
@@ -51,6 +54,14 @@ class Users(db.Model):
     def __repr__(self):
         return '<Name %r>' % self.name
 
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    content = db.Column(db.Text(255))
+    author = db.Column(db.String(120))
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(255)) 
+
 # db.drop_all()
 # db.create_all()
 
@@ -67,6 +78,35 @@ class PasswordForm(FlaskForm):
     password = PasswordField('What is Your Password', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
+# Create  a Form Class
+class NamerForm(FlaskForm):
+    name = StringField('What is your name', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    author = StringField('Author', validators=[DataRequired()])
+    slug = StringField('Slug', validators=[DataRequired()])
+    content = StringField('Content', validators=[DataRequired()], widget=TextArea())
+    submit= SubmitField('Submit')
+
+#  Posts Add 
+@app.route('/add_post/', methods=['GET', 'POST'])
+def add_post():
+    form = PostForm()
+
+    if form.validate_on_submit():
+        post = Posts(title=form.title.data, author=form.author.data, slug=form.slug.data, content=form.content.data)
+        form.title.data = ''
+        form.author.data = ''
+        form.content.data = ''
+        form.slug.data = ''
+
+        db.session.add(post)
+        db.session.commit()
+
+        flash('Blog Post Added Successfully')
+    return render_template("add_post.html", form=form)
 
 @app.route('/update/<int:id>/', methods=['GET', 'POST'])
 def update(id):
@@ -104,10 +144,7 @@ def delete(id):
         flash('Error deleting user')
 
 
-# Create  a Form Class
-class NamerForm(FlaskForm):
-    name = StringField('What is your name', validators=[DataRequired()])
-    submit = SubmitField('Submit')
+
 
 # BooleanField, DateField, DateTimeField, DecimalField, FileField, HiddenField, MultipleField, FieldList,
 # FloatField, FormField, IntegerField, PasswordField, RadioField, SelectField, SubmitField, StringField, TextAreaField
