@@ -6,6 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
 {% endfor %}
+{% if current_user.is_authenticated %}
     <h1>Post Added</h1>
     <br/>
     <div class="shadow p-3 mb-5 bg-body rounded">
@@ -25,5 +26,9 @@
             <br/> <br/>
             {{ form.submit(class="btn btn-outline-secondary") }}
         </form>
-    </div>     
+    </div>  
+{% else %}
+<h2>Sorry, you can not access this page. Because you are not login!</h2>
+<a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-sm">Login Page</a>
+{%  endif %}   
 {% endblock %}
