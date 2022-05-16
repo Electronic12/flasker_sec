@@ -6,43 +6,33 @@
         Hey {{ name }} {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
-{% endfor %}
-
-    {% if name %}
-        <h1>Update User</h1>
-        <table class="table table-hover table-bordered table-striped">
-        {%  for our_user in our_users %}
-                <tr>
-                    <td>
-                        {{ our_user.id }}.
-                        {{  our_user.name }}
-                        {{ our_user.email }}
-                        {{ our_user.favorite_color }}
-                    </td>                   
-                </tr>              
-        {% endfor %}
-        </table>
-    {% else %}
-    
-        <h1>Update User ...</h1>
-        <br/>
-<div class="shadow p-3 mb-5 bg-body rounded">
-        <form action="/update/{{ update_db_user.id }}/" method="POST">
-            {{ form.hidden_tag() }}
-            {{ form.name.label(class="form-label") }}
-            {{ form.name(class="form-control", value=update_db_user.name) }}
-            <br/>
-            {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control", value=update_db_user.email) }}
-            <br/><br/>
-            {{ form.favorite_color.label(class="form-label") }}
-            {{ form.favorite_color(class="form-control", value=update_db_user.favorite_color) }}
-            <br/>
-            {{ form.submit(class="btn btn-outline-secondary") }}
-            <a  href="{{ url_for('delete', id = id) }}" class="btn btn-danger">Delete</a>
-        </form>
-</div>
-
-        <br/><br/><br/>       
-    {% endif %}
+{% endfor %}    
+{% if id == current_user.id %}
+    <h1>Update User </h1>
+    <br/><br/>
+    <div class="shadow p-3 mb-5 bg-body rounded">
+            <form action="/update/{{ update_db_user.id }}/" method="POST">
+                {{ form.hidden_tag() }}
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control", value=update_db_user.name) }}
+                <br/>
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control", value=update_db_user.username) }}
+                <br/>
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", value=update_db_user.email) }}
+                <br/><br/>
+                {{ form.favorite_color.label(class="form-label") }}
+                {{ form.favorite_color(class="form-control", value=update_db_user.favorite_color) }}
+                <br/>
+                {{ form.submit(class="btn btn-outline-secondary") }}
+                <a  href="{{ url_for('delete', id = current_user.id) }}" class="btn btn-danger">Delete</a>
+            </form>
+    </div>
+{% else %}
+    <div class="alert alert-primary alert-dismissible fade show" role="alert">
+        Sorry you can not edit this user profile!!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
 {% endblock %} 

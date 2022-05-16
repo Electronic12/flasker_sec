@@ -22,7 +22,33 @@
                 <strong>Favorit color:</strong>{{ current_user.favorite_color }}<br/>
                 <strong>Data Joined:</strong>{{ current_user.date_added }}<br/>  
             </p>
-            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Go somewhere</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Logout</a>
+            <a href="{{ url_for('update', id=current_user.id) }}" class="btn btn-outline-secondary btn-sm">Update Profile</a>
+            <a  href="{{ url_for('delete', id = current_user.id) }}" class="btn btn-danger btn-sm">Delete</a>
         </div>
-    </div>         
+    </div> 
+<br/>
+<div class="card">
+    <div class="card-header">
+        Update Profile
+    </div>
+    <div class="card-body">  
+        <form action="/update/{{ update_db_user.id }}/" method="POST">
+            {{ form.hidden_tag() }}
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control", value=update_db_user.name) }}
+            <br/>
+            {{ form.username.label(class="form-label") }}
+            {{ form.username(class="form-control", value=update_db_user.username) }}
+            <br/>
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control", value=update_db_user.email) }}
+            <br/><br/>
+            {{ form.favorite_color.label(class="form-label") }}
+            {{ form.favorite_color(class="form-control", value=update_db_user.favorite_color) }}
+            <br/>
+            {{ form.submit(class="btn btn-outline-secondary") }}
+        </form>
+    </div>
+</div>
 {% endblock %}
