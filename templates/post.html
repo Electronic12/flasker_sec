@@ -11,11 +11,13 @@
 <br/>
     <div class="shadow p-3 mb-5 bg-body rounded">
     <h2>{{ post.title }}</h2><br/>
-    {{ post.author }}<br/>
+    <small>By:{{ post.poster.name }}</small><br/>
     {{ post.date_posted }}<br/>
     {{ post.content }}<br/>
     </div>
-    <a href="{{ url_for('edit_post', id=post.id) }}" class="btn btn-outline-secondary">Edit Post</a>
-    <a href="{{ url_for('delete_post', id=post.id) }}" class="btn btn-outline-danger">Delete Post</a>
+    {% if post.poster_id == current_user.id %}
+        <a href="{{ url_for('edit_post', id=post.id) }}" class="btn btn-outline-secondary">Edit Post</a>
+        <a href="{{ url_for('delete_post', id=post.id) }}" class="btn btn-outline-danger">Delete Post</a>
+    {% endif %}
     <a href="{{ url_for('posts') }}" class="btn btn-outline-secondary">Back to Block</a>
 {% endblock %}

@@ -36,42 +36,6 @@ def date_for_json():
     return favorite_games
     # return {"Date": date.today() }
 
-class Users(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(25), nullable=False, unique=True)
-    name = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(150), nullable=False, unique=True)
-    favorite_color = db.Column(db.String(120))
-    date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    password_hash = db.Column(db.String(120))
-    posts = db.relationship('Posts', backref='poster')
-
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable')
-
-    @password.setter
-    def password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    def __repr__(self):
-        return '<Name %r>' % self.name
-
-class Posts(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255))
-    content = db.Column(db.Text(255))
-    # author = db.Column(db.String(120))
-    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
-    slug = db.Column(db.String(255)) 
-    poster_id = db.Column(db.Integer, db.ForeignKey(Users.id))
-
-# db.drop_all()
-# db.create_all()
-
 @app.route('/login/', methods = ['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -132,13 +96,14 @@ def posts():
 
 #  Posts Add 
 @app.route('/add_post/', methods=['GET', 'POST'])
+@login_required
 def add_post():
     form = PostForm()
 
     if form.validate_on_submit():
-        post = Posts(title=form.title.data, author=form.author.data, slug=form.slug.data, content=form.content.data)
+        poster = current_user.id
+        post = Posts(title=form.title.data, slug=form.slug.data, poster_id=poster, content=form.content.data)
         form.title.data = ''
-        form.author.data = ''
         form.content.data = ''
         form.slug.data = ''
 
@@ -149,23 +114,29 @@ def add_post():
     return render_template("add_post.html", form=form)
 
 @app.route('/posts/edit/<int:id>/', methods=['GET', 'POST'])
+@login_required
 def edit_post(id):
     post = Posts.query.get_or_404(id)
     form = PostForm()
     if form.validate_on_submit():
         post.title = form.title.data
-        post.author = form.author.data
         post.content = form.content.data
         post.slug = form.slug.data
         db.session.add(post)
         db.session.commit()
         flash('Post updated succsesfully.')
         return redirect(url_for('post', id=post.id))
-    form.title.data = post.title
-    form.author.data = post.author
-    form.slug.data = post.slug
-    form.content.data = post.content
-    return render_template('edit_post.html', form=form)
+
+    if current_user.id == post.poster_id:
+        form.title.data = post.title
+        form.slug.data = post.slug
+        form.content.data = post.content
+        return render_template('edit_post.html', form=form)
+    
+    else:
+        flash('You anr not Author of this post!')
+        posts = Posts.query.order_by(Posts.date_posted)
+        return render_template('posts.html', posts=posts)
 
 
 @app.route('/update/<int:id>/', methods=['GET', 'POST'])
@@ -191,19 +162,28 @@ def update(id):
         return render_template("update_to_username.html", form=form, update_db_user=update_db_user, id=id)
 
 @app.route('/posts/delete/<int:id>/')
+@login_required
 def delete_post(id):
     post_to_delete = Posts.query.get_or_404(id)
-    try:
-        db.session.delete(post_to_delete)
-        db.session.commit()
-        flash('Post was deleted successfully')
+    id = current_user.id
+    if id == post_to_delete.poster.id:
+        try:
+            db.session.delete(post_to_delete)
+            db.session.commit()
+            flash('Post was deleted successfully')
+            posts = Posts.query.order_by(Posts.date_posted)
+            return render_template('posts.html', posts=posts)
+        
+        except:
+            flash('There was an error deleting the post!')
+            posts = Posts.query.order_by(Posts.date_posted)
+            return render_template('posts.html', posts=posts)
+
+    else:
+        flash('You are not authorized!')
         posts = Posts.query.order_by(Posts.date_posted)
         return render_template('posts.html', posts=posts)
-    
-    except:
-        flash('There was an error deleting the post!')
-        posts = Posts.query.order_by(Posts.date_posted)
-        return render_template('posts.html', posts=posts)
+
 
 @app.route('/delete/<int:id>/')
 def delete(id):
@@ -314,6 +294,41 @@ def name():
     return render_template("name.html",
                             name=name, 
                             form=form)
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    content = db.Column(db.Text(255))
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(255)) 
+    poster_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
+class Users(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(25), nullable=False, unique=True)
+    name = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(150), nullable=False, unique=True)
+    favorite_color = db.Column(db.String(120))
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    password_hash = db.Column(db.String(120))
+    posts = db.relationship('Posts', backref='poster',lazy=True)
+
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable')
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return '<Name %r>' % self.name
+
+
+# db.drop_all()
+# db.create_all()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000, host='localhost')

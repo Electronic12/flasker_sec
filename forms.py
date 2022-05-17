@@ -36,7 +36,6 @@ class NamerForm(FlaskForm):
 
 class PostForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
-    author = StringField('Author', validators=[DataRequired()])
     slug = StringField('Slug', validators=[DataRequired()])
     content = StringField('Content', validators=[DataRequired()], widget=TextArea())
     submit= SubmitField('Submit')
