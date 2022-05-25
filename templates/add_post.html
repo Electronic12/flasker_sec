@@ -23,6 +23,12 @@
             <br/> <br/>
             {{ form.submit(class="btn btn-outline-secondary") }}
         </form>
+
+        {{ cheditor.load() }}
+        {{ cheditor.config(name='content') }}
+        {{ cheditor.config(name='title') }}
+        <!-- {{ cheditor.config(name='content') }} -->
+
     </div>  
 {% else %}
 <h2>Sorry, you can not access this page. Because you are not login!</h2>

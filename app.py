@@ -4,11 +4,13 @@ from datetime import datetime, date
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, logout_user, current_user, LoginManager, UserMixin, login_user
-from forms import LoginForm, UserForm, PasswordForm, NamerForm, PostForm
+from forms import LoginForm, UserForm, PasswordForm, NamerForm, PostForm, SearchForm
+# from flask_ckeditor import CKEditor
 
 #  Create a Flask Instance
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secretversion'
+# cckeditor = CKEditor(app)
 # Add Database Connection
 # Old SQLite DB
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///codemy.db'
@@ -35,6 +37,25 @@ def date_for_json():
     }
     return favorite_games
     # return {"Date": date.today() }
+@app.context_processor
+def base():
+    form = SearchForm()
+    return dict(form=form)
+
+@app.route('/search/', methods=['POST'])
+def search():
+    form = SearchForm()
+    posts = Posts.query
+    if form.validate_on_submit():
+        # Get data from submitted search form
+        post.searched = form.searched.data
+        # Query the Database
+        posts = posts.filter(Posts.content.like('%' + post.searched + '%'))
+        posts = posts.filter(Posts.title.like('%' + post.searched + '%'))
+        posts = posts.filter(Posts.slug.like('%' + post.searched + '%'))
+        posts = posts.order_by(Posts.title).all()
+        return render_template('search.html', form=form, searched=post.searched, posts=posts)
+
 
 @app.route('/login/', methods = ['GET', 'POST'])
 def login():
@@ -111,7 +132,7 @@ def add_post():
         db.session.commit()
 
         flash('Blog Post Added Successfully')
-    return render_template("add_post.html", form=form)
+        return render_template("add_post.html", form=form)
 
 @app.route('/posts/edit/<int:id>/', methods=['GET', 'POST'])
 @login_required

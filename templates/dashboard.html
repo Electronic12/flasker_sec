@@ -15,6 +15,9 @@
         <div class="card-body">
             <h5>Welcome to your user dashboard</h5>
             <p class="card-text"> 
+    <div class="container">
+        <div class="row">
+            <div class="col-8">
                 <strong>Name:</strong>{{ current_user.name }}<br/>
                 <strong>Username:</strong>{{ current_user.username }}<br/>
                 <strong>User ID:</strong>{{ current_user.id }}<br/>
@@ -25,6 +28,13 @@
             <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Logout</a>
             <a href="{{ url_for('update', id=current_user.id) }}" class="btn btn-outline-secondary btn-sm">Update Profile</a>
             <a  href="{{ url_for('delete', id = current_user.id) }}" class="btn btn-danger btn-sm">Delete</a>
+            
+            </div>
+            <div class="col-4"><img scr="{{ url_for('static', filename='images/default.png')}}" width="200" align="right"></div>
+
+            </div>
+        </div>
+    </div>
         </div>
     </div> 
 <br/>
